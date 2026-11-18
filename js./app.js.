@@ -1,0 +1,196 @@
+
+const API_URL = "https://rickandmortyapi.com/api/location";
+const CLAVE_ALMACENAMIENTO = "exploradorUbicacionesUltimaBusqueda";
+
+const formulario = document.querySelector("#formulario-busqueda");
+const campoNombre = document.querySelector("#nombre");
+const campoTipo = document.querySelector("#tipo");
+const botonBuscar = document.querySelector("#boton-buscar");
+const contenedorResultados = document.querySelector("#resultados");
+const mensaje = document.querySelector("#mensaje");
+const contador = document.querySelector("#contador");
+
+const mostrarMensaje = (texto, tipo = "") => {
+  mensaje.textContent = texto;
+  mensaje.className = tipo ? `mensaje ${tipo}` : "mensaje";
+};
+
+const limpiarResultados = () => {
+  contenedorResultados.replaceChildren();
+  contador.textContent = "Sin resultados mostrados";
+};
+
+const obtenerValor = (valor) => {
+  if (
+    valor === null ||
+    valor === undefined ||
+    String(valor).trim() === "" ||
+    String(valor).toLowerCase() === "unknown"
+  ) {
+    return "Desconocido";
+  }
+
+  return String(valor);
+};
+
+const crearDetalle = (etiqueta, valor) => {
+  const fila = document.createElement("div");
+  fila.className = "detalle";
+
+  const nombreDato = document.createElement("span");
+  nombreDato.textContent = etiqueta;
+
+  const valorDato = document.createElement("span");
+  valorDato.textContent = valor;
+
+  fila.append(nombreDato, valorDato);
+  return fila;
+};
+
+const crearTarjeta = (ubicacion, indice) => {
+  const tarjeta = document.createElement("article");
+  tarjeta.className = "tarjeta";
+
+  const numero = document.createElement("span");
+  numero.className = "tarjeta-numero";
+  numero.textContent = `UBICACIÓN Nº ${String(indice).padStart(2, "0")}`;
+
+  const titulo = document.createElement("h3");
+  titulo.textContent = obtenerValor(ubicacion.name);
+
+  tarjeta.append(
+    numero,
+    titulo,
+    crearDetalle("Tipo", obtenerValor(ubicacion.type)),
+    crearDetalle("Dimensión", obtenerValor(ubicacion.dimension)),
+    crearDetalle("Residentes", String(ubicacion.residents.length))
+  );
+
+  return tarjeta;
+};
+
+const mostrarUbicaciones = (ubicaciones) => {
+  const tarjetas = ubicaciones.map((ubicacion, indice) =>
+    crearTarjeta(ubicacion, indice + 1)
+  );
+
+  contenedorResultados.replaceChildren(...tarjetas);
+  contador.textContent = `${ubicaciones.length} ubicación(es) encontrada(s)`;
+};
+
+const obtenerUbicaciones = async (nombre, tipo) => {
+  const url = new URL(API_URL);
+
+  if (nombre) {
+    url.searchParams.set("name", nombre);
+  }
+
+  if (tipo) {
+    url.searchParams.set("type", tipo);
+  }
+
+  const respuesta = await fetch(url);
+
+  if (respuesta.status === 404) {
+    return [];
+  }
+
+  if (!respuesta.ok) {
+    throw new Error(`La API respondió con el estado ${respuesta.status}.`);
+  }
+
+  const datos = await respuesta.json();
+  return datos.results;
+};
+
+const buscarUbicaciones = async (nombre, tipo) => {
+  const nombreNormalizado = nombre.trim();
+  const tipoNormalizado = tipo.trim();
+
+  if (!nombreNormalizado && !tipoNormalizado) {
+    limpiarResultados();
+    mostrarMensaje(
+      "Ingresá al menos un criterio: nombre o tipo de ubicación.",
+      "error"
+    );
+    return;
+  }
+
+  botonBuscar.disabled = true;
+  botonBuscar.textContent = "Buscando…";
+  limpiarResultados();
+  mostrarMensaje("Buscando ubicaciones en el multiverso…");
+
+  try {
+    const ubicaciones = await obtenerUbicaciones(
+      nombreNormalizado,
+      tipoNormalizado
+    );
+
+    if (ubicaciones.length === 0) {
+      mostrarMensaje(
+        "No se encontraron ubicaciones con esos criterios. Probá con otra búsqueda."
+      );
+      contador.textContent = "0 ubicaciones encontradas";
+      return;
+    }
+
+    mostrarUbicaciones(ubicaciones);
+    mostrarMensaje(
+      `¡Exploración completada! Se encontraron ${ubicaciones.length} resultado(s).`
+    );
+  } catch (error) {
+    console.error("Error al consultar la API:", error);
+    mostrarMensaje(
+      "No se pudo conectar con el servicio. Revisá tu conexión e intentá nuevamente.",
+      "error"
+    );
+    contador.textContent = "No se pudo completar la búsqueda";
+  } finally {
+    botonBuscar.disabled = false;
+    botonBuscar.textContent = "Buscar ubicaciones →";
+  }
+};
+
+formulario.addEventListener("submit", (evento) => {
+  evento.preventDefault();
+
+  const busqueda = {
+    nombre: campoNombre.value.trim(),
+    tipo: campoTipo.value.trim()
+  };
+
+  localStorage.setItem(
+    CLAVE_ALMACENAMIENTO,
+    JSON.stringify(busqueda)
+  );
+
+  buscarUbicaciones(busqueda.nombre, busqueda.tipo);
+});
+
+const restaurarUltimaBusqueda = () => {
+  const busquedaGuardada = localStorage.getItem(
+    CLAVE_ALMACENAMIENTO
+  );
+
+  if (!busquedaGuardada) {
+    return;
+  }
+
+  try {
+    const busqueda = JSON.parse(busquedaGuardada);
+
+    campoNombre.value = busqueda.nombre ?? "";
+    campoTipo.value = busqueda.tipo ?? "";
+
+    if (campoNombre.value || campoTipo.value) {
+      buscarUbicaciones(campoNombre.value, campoTipo.value);
+    }
+  } catch (error) {
+    console.error("No se pudo restaurar la última búsqueda:", error);
+    localStorage.removeItem(CLAVE_ALMACENAMIENTO);
+  }
+};
+
+restaurarUltimaBusqueda();
+  
