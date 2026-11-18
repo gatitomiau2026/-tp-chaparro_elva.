@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Explorador de ubicaciones del universo de Rick y Morty.">
+  <title>Explorador de Ubicaciones | Rick y Morty</title>
+  <link rel="stylesheet" href="css/estilos.css">
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <header class="encabezado">
+    <div class="marca">
+      <span class="marca-icono" aria-hidden="true">✦</span>
+      <div>
+        <p class="sobretitulo">RICK AND MORTY · API EXPLORER</p>
+        <h1>Explorador de ubicaciones</h1>
+      </div>
+    </div>
+    <span class="etiqueta-variante">VARIANTE B</span>
+  </header>
+
+  <main class="contenedor">
+    <section class="introduccion" aria-labelledby="titulo-intro">
+      <p class="eyebrow">MULTIVERSO EN EXPLORACIÓN</p>
+      <h2 id="titulo-intro">Descubrí nuevos mundos</h2>
+      <p>Buscá ubicaciones, conocé sus dimensiones y descubrí cuántos residentes habitan en cada lugar.</p>
+    </section>
+
+    <section class="panel-busqueda" aria-labelledby="titulo-busqueda">
+      <h2 id="titulo-busqueda">Buscar ubicaciones</h2>
+      <form id="formulario-busqueda">
+        <div class="campo">
+          <label for="nombre">Nombre de la ubicación</label>
+          <input id="nombre" name="nombre" type="search" placeholder="Ej.: Earth, Citadel..." autocomplete="off">
+        </div>
+        <div class="campo">
+          <label for="tipo">Tipo de ubicación</label>
+          <input id="tipo" name="tipo" type="text" placeholder="Ej.: Planet, Space station..." autocomplete="off">
+        </div>
+        <button id="boton-buscar" type="submit">Buscar ubicaciones <span aria-hidden="true">→</span></button>
+      </form>
+      <p class="ayuda">Podés buscar por nombre, por tipo o combinar ambos filtros.</p>
+    </section>
+
+    <section class="seccion-resultados" aria-labelledby="titulo-resultados">
+      <div class="encabezado-resultados">
+        <div>
+          <p class="eyebrow">BASE DE DATOS</p>
+          <h2 id="titulo-resultados">Resultados</h2>
+        </div>
+        <span id="contador" class="contador" aria-live="polite">Esperando búsqueda</span>
+      </div>
+      <p id="mensaje" class="mensaje" role="status" aria-live="polite">Ingresá un nombre o un tipo para comenzar la exploración.</p>
+      <div id="resultados" class="grilla-tarjetas"></div>
+    </section>
+  </main>
+
+  <footer class="pie">
+    <p>Trabajo práctico · Fundamentos de Desarrollo Web</p>
+    <p><strong>Elva Beatriz Chaparro Noguera</strong> · Ingeniería en Informática</p>
+    <p class="creditos">Datos obtenidos de la API pública de Rick and Morty</p>
+  </footer>
+</body>
+</html>
